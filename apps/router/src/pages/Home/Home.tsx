@@ -36,6 +36,7 @@ const HomePage: React.FC = () => {
 
   const [serviceUrl, setServiceUrl] = useState<string>('');
   const [isGateway, setIsGateway] = useState(false);
+  const [showTest, setShowTest] = useState(false);
 
   useEffect(() => {
     setIsGateway(false);
@@ -53,23 +54,48 @@ const HomePage: React.FC = () => {
     setServiceUrl(url.trim());
   };
 
+  useEffect(() => {
+    window.addEventListener('message', (event) => {
+      console.log('message', event);
+      if (event.data === 'hello') {
+        // console.log('test');
+        // setShowTest(true);
+      }
+    });
+  }, []);
+
   const handleOnConnect = async () => {
-    const id = await sha256Hash(serviceUrl);
-    const serviceType = getServiceType(serviceUrl);
-
-    if (!serviceType) return;
-
-    if (serviceType === 'gateway') {
-      setIsGateway(true);
-      return;
+    console.log('handleOnConnect');
+    console.log('window.parent keys', Object.keys(window.parent[0]));
+    console.log('window.top keys', Object.keys(window.top[0]));
+    console.log('window.parent', window.parent[0].origin);
+    console.log('window.top', window.top[0].origin);
+    console.log('parent == top', window.parent[0].origin === window.top[0].origin);
+    if (window.parent[0].origin !== window.top[0].origin) {
+      setShowTest(true);
+    }
+    try {
+      window.parent.postMessage('test', 'http://localhost:3000');
+    } catch (error) {
+      console.error(error);
     }
 
-    dispatch({
-      type: APP_ACTION_TYPE.ADD_SERVICE,
-      payload: { service: { config: { id, baseUrl: serviceUrl } } },
-    });
+    // const id = await sha256Hash(serviceUrl);
+    // const serviceType = getServiceType(serviceUrl);
 
-    return navigate(`/guardians/${id}`);
+    // if (!serviceType) return;
+
+    // if (serviceType === 'gateway') {
+    //   setIsGateway(true);
+    //   return;
+    // }
+
+    // dispatch({
+    //   type: APP_ACTION_TYPE.ADD_SERVICE,
+    //   payload: { service: { config: { id, baseUrl: serviceUrl } } },
+    // });
+
+    // return navigate(`/guardians/${id}`);
   };
 
   const handleOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -128,7 +154,7 @@ const HomePage: React.FC = () => {
       >
         <Logo />
         <Text mt='5' fontSize='28'>
-          {t('login.title')}
+          {t('login.title') + 'sss'}
         </Text>
         <Box
           maxWidth='720px'
@@ -175,7 +201,7 @@ const HomePage: React.FC = () => {
               onClick={handleOnConnect}
               isLoading={false}
             >
-              Connect
+              {showTest ? 'test' : 'Connect'}
             </Button>
           </Stack>
           <Text fontSize='14px'>
